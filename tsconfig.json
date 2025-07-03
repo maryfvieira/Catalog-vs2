@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "es2022",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    "experimentalDecorators": true
+
+    // "resolveJsonModule": false,
+    // "allowSyntheticDefaultImports": true,
+  },
+  "include": [
+    "src/**/*"
+  // , "swagger.d.ts"
+],
+  "exclude": ["node_modules"]
+}

@@ -1,0 +1,21 @@
+version: "3.8"
+
+services:
+  mongo:
+    image: mongo:7.0
+    container_name: mongo-rs
+    restart: unless-stopped
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: user
+      MONGO_INITDB_ROOT_PASSWORD: 123456
+      MONGO_INITDB_DATABASE: curso_git
+    command: >
+      mongod --replSet rs0 --bind_ip_all --auth --keyFile /etc/mongo-keyfile/keyfile
+    volumes:
+      - mongo-data:/data/db
+      - ./mongo-keyfile/keyfile:/etc/mongo-keyfile/keyfile:ro
+
+volumes:
+  mongo-data:

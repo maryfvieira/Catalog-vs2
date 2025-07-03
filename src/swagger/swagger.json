@@ -1,0 +1,49 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+      "title": "Product API",
+      "version": "1.0.0"
+    },
+    "paths": {
+      "/products": {
+        "get": {
+          "summary": "Get all products",
+          "responses": { "200": { "description": "OK" } }
+        },
+        "post": {
+          "summary": "Create a product",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Product" }
+              }
+            }
+          },
+          "responses": { "201": { "description": "Created" } }
+        }
+      },
+      "/products/{id}": {
+        "get": {
+          "summary": "Get product by ID",
+          "parameters": [
+            { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+          ],
+          "responses": { "200": { "description": "OK" }, "404": { "description": "Not Found" } }
+        }
+      }
+    },
+    "components": {
+      "schemas": {
+        "Product": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "price": { "type": "number" },
+            "description": { "type": "string" }
+          },
+          "required": ["name", "price"]
+        }
+      }
+    }
+  }
