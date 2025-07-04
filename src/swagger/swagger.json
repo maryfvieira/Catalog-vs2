@@ -1,49 +1,170 @@
 {
-    "openapi": "3.0.0",
-    "info": {
-      "title": "Product API",
-      "version": "1.0.0"
-    },
-    "paths": {
-      "/products": {
-        "get": {
-          "summary": "Get all products",
-          "responses": { "200": { "description": "OK" } }
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Product API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/products": {
+      "get": {
+        "summary": "Get all products",
+        "responses": {
+          "200": {
+            "description": "List of products",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Product" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new product",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ProductInput" }
+            }
+          }
         },
-        "post": {
-          "summary": "Create a product",
-          "requestBody": {
-            "required": true,
+        "responses": {
+          "201": {
+            "description": "Product created",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/Product" }
               }
             }
           },
-          "responses": { "201": { "description": "Created" } }
-        }
-      },
-      "/products/{id}": {
-        "get": {
-          "summary": "Get product by ID",
-          "parameters": [
-            { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
-          ],
-          "responses": { "200": { "description": "OK" }, "404": { "description": "Not Found" } }
+          "400": { "description": "Invalid input" }
         }
       }
     },
-    "components": {
-      "schemas": {
-        "Product": {
-          "type": "object",
-          "properties": {
-            "name": { "type": "string" },
-            "price": { "type": "number" },
-            "description": { "type": "string" }
+    "/products/{id}": {
+      "get": {
+        "summary": "Get product by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "MongoDB ObjectID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Product" }
+              }
+            }
           },
-          "required": ["name", "price"]
+          "404": { "description": "Product not found" }
+        }
+      },
+      "put": {
+        "summary": "Update a product",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "MongoDB ObjectID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ProductUpdate" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Product updated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Product" }
+              }
+            }
+          },
+          "400": { "description": "Invalid input" },
+          "404": { "description": "Product not found" }
+        }
+      },
+      "delete": {
+        "summary": "Delete a product",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "MongoDB ObjectID"
+          }
+        ],
+        "responses": {
+          "204": { "description": "Product deleted" },
+          "404": { "description": "Product not found" }
         }
       }
     }
+  },
+  "components": {
+    "schemas": {
+      "Product": {
+        "type": "object",
+        "properties": {
+          "id": { 
+            "type": "string",
+            "example": "6624b5c9a78d935e5e7d3f2a"
+          },
+          "name": { "type": "string", "example": "Smartphone" },
+          "price": { "type": "number", "example": 999.99 },
+          "description": { 
+            "type": "string",
+            "example": "Latest model smartphone"
+          }
+        },
+        "required": ["id", "name", "price", "description"]
+      },
+      "ProductInput": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "example": "Smartphone" },
+          "price": { "type": "number", "example": 999.99 },
+          "description": { 
+            "type": "string",
+            "example": "Latest model smartphone"
+          }
+        },
+        "required": ["name", "price"]
+      },
+      "ProductUpdate": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "example": "Updated Smartphone" },
+          "price": { "type": "number", "example": 1099.99 },
+          "description": { 
+            "type": "string",
+            "example": "Updated description"
+          }
+        },
+        "anyOf": [
+          { "required": ["name"] },
+          { "required": ["price"] },
+          { "required": ["description"] }
+        ]
+      }
+    }
   }
+}

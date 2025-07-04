@@ -1,17 +1,17 @@
+import { Expose, Transform } from 'class-transformer';
 import { IsNotEmpty, IsString, IsNumber, Min } from 'class-validator';
 
 export class Product {
+    @Expose({ toClassOnly: true })
     id?: string;
 
-    @IsNotEmpty()
-    @IsString()
+    @Expose()
     name!: string;
 
-    @IsNotEmpty()
-    @IsNumber()
-    @Min(0)
+    @Transform(({ value }) => parseFloat(value), { toClassOnly: true })
+    @Expose()
     price!: number;
 
-    @IsString()
+    @Expose()
     description!: string;
 }

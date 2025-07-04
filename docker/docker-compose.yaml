@@ -6,7 +6,7 @@ services:
     container_name: mongo-rs
     restart: unless-stopped
     ports:
-      - 27017:27017
+      - "27017:27017"
     environment:
       MONGO_INITDB_ROOT_USERNAME: user
       MONGO_INITDB_ROOT_PASSWORD: 123456
@@ -15,6 +15,7 @@ services:
       mongod --replSet rs0 --bind_ip_all --auth --keyFile /etc/mongo-keyfile/keyfile
     volumes:
       - mongo-data:/data/db
+      - ./mongo-init:/docker-entrypoint-initdb.d
       - ./mongo-keyfile/keyfile:/etc/mongo-keyfile/keyfile:ro
 
 volumes:
