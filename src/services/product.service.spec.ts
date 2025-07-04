@@ -5,7 +5,6 @@ import { IProductRepository } from '../interfaces/product-repository.interface';
 import { ProductCreateDto } from '../dto/product-create.dto';
 import { ProductUpdateDto } from '../dto/product-update.dto';
 
-
 // Mock completo com tipagem explícita para todos os métodos
 const mockProductRepository: jest.Mocked<IProductRepository> = {
   findAll: jest.fn(),
