@@ -1,0 +1,78 @@
+name: Practise6
+on:
+  push:
+    branches:
+      - main
+
+env:
+  MONGODB_PORT: 27017
+  MONGO_DB_TIMEOUT: 15000
+  PORT: 8080  # Definindo a variável PORT globalmente
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      mongo:
+        image: mongo:6.0
+        ports:
+          - 27017:27017
+        env:
+          MONGO_INITDB_ROOT_USERNAME: user
+          MONGO_INITDB_ROOT_PASSWORD: 123456
+          MONGO_INITDB_DATABASE: curso_git
+        options: >-
+          --health-cmd="mongosh --eval 'db.adminCommand(\"ping\")'"
+          --health-interval=10s
+          --health-timeout=15s
+          --health-retries=5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: deps-node-modules-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Passo crítico: Resolver aliases durante o build
+      - name: Build project
+        run: |
+          npm run build
+          npx tsc-alias -v  # Resolve caminhos de aliases
+
+      - name: Run Server
+        env:
+          PORT: ${{ env.PORT }}  # Usando a variável definida
+        run: |
+          npm start &
+          npx wait-on http://127.0.0.1:$PORT
+
+      - name: Run tests
+        env:
+          NODE_ENV: test
+          CI: true
+          MONGODB_CLUSTER_ADDRESS: localhost
+          MONGODB_USERNAME: user
+          MONGODB_PASSWORD: 123456
+          MONGODB_DB_NAME: curso_git
+          PORT: ${{ env.PORT }}  # Garantindo consistência
+        run: npm test
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Output info
+        run: "echo MONGO_DB_TIMEOUT: $MONGO_DB_TIMEOUT"
