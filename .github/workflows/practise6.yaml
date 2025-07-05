@@ -68,7 +68,7 @@ jobs:
           MONGODB_PASSWORD: 123456
           MONGODB_DB_NAME: curso_git
           PORT: ${{ env.PORT }}  # Garantindo consistência
-        run: npm test
+        run: npm run test:integration
 
   build:
     needs: test

@@ -16,7 +16,7 @@
   },
   "include": [
     "src/**/*"
-  // , "swagger.d.ts"
+, "tests/product.service.integration.spec.ts"  // , "swagger.d.ts"
 ],
   "exclude": ["node_modules"]
 }

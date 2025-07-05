@@ -23,6 +23,8 @@ module.exports = {
   
   // Caminhos para arquivos de setup
   setupFiles: ['dotenv/config'],
+  globalSetup: './tests/setup.ts',
+  globalTeardown: './tests/teardown.ts',
   
   // Opcional: Configurações de cobertura
   collectCoverage: true,
