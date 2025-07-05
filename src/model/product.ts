@@ -3,7 +3,7 @@ import { IsNotEmpty, IsString, IsNumber, Min } from 'class-validator';
 
 export class Product {
     @Expose({ toClassOnly: true })
-    id?: string;
+    id!: string;
 
     @Expose()
     name!: string;
