@@ -52,26 +52,37 @@ jobs:
           npm run build
           npx tsc-alias -v  # Resolve caminhos de aliases
 
-      - name: Run Server
+      - name: Run tests with server
         env:
-          PORT: ${{ env.PORT }}  # Usando a variável definida
-        run: |
-          npm start &
-          npx wait-on http://127.0.0.1:$PORT
-
-      - name: Run tests
-        env:
+          PORT: ${{ env.PORT }}
           NODE_ENV: test
           CI: true
           MONGODB_CLUSTER_ADDRESS: localhost
           MONGODB_USERNAME: user
           MONGODB_PASSWORD: 123456
           MONGODB_DB_NAME: curso_git
-          PORT: ${{ env.PORT }}  # Garantindo consistência
-        run: npm run test
+        run: |
+          # Inicia o servidor em segundo plano
+          npm start &
+          SERVER_PID=$!
+    
+          # Aguarda o servidor iniciar
+          npx wait-on http://127.0.0.1:$PORT
+    
+          # Executa os testes
+          npm run test
+          TEST_EXIT_CODE=$?
+    
+          # Encerra o servidor
+          kill $SERVER_PID
+          wait $SERVER_PID
+    
+          # Sai com o código dos testes
+          exit $TEST_EXIT_CODE
+
       - name: Output info
         run: echo "MONGODB_CLUSTER_ADDRESS=${{ env.MONGODB_CLUSTER_ADDRESS }}, MONGODB_USERNAME=${{ env.MONGODB_USERNAME }},  MONGODB_DB_NAME=${{ env.MONGODB_DB_NAME }}, PORT=${{ env.PORT }}"
-          
+      
   deploy:
     needs: build
     runs-on: ubuntu-latest
