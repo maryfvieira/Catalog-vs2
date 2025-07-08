@@ -63,21 +63,28 @@ jobs:
           MONGODB_DB_NAME: curso_git
         run: |
           # Inicia o servidor em segundo plano
-          npm start &
+          nohup npm start > server.log 2>&1 &
           SERVER_PID=$!
     
           # Aguarda o servidor iniciar
-          npx wait-on http://127.0.0.1:$PORT
+          npx wait-on -t 30000 http://127.0.0.1:$PORT
+
+          curl -I http://localhost:$PORT
     
           # Executa os testes
           npm run test
           TEST_EXIT_CODE=$?
+          echo "Tests completed with exit code: $TEST_EXIT_CODE"
     
           # Encerra o servidor
+          echo "Stopping server (PID: $SERVER_PID)..."
           kill $SERVER_PID
-          wait $SERVER_PID
-    
-          # Sai com o código dos testes
+          speep   5000  # Aguarda 5 segundos para garantir que o servidor foi encerrado corretamente
+          # Força o encerramento se necessário
+          if ps -p $SERVER_PID > /dev/null; then
+            echo "Server still running, forcing kill..."
+            kill -9 $SERVER_PID
+          fi
           exit $TEST_EXIT_CODE
 
       - name: Output info

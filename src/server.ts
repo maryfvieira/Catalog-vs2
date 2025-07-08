@@ -29,4 +29,21 @@ server.setErrorConfig((app) => {
 
 const app = server.build();
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
+const appServer = app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
+
+// Tratamento de sinais para shutdown limpo
+['SIGINT', 'SIGTERM'].forEach(signal => {
+  process.on(signal, () => {
+    console.log(`Received ${signal}, closing server...`);
+    appServer.close(() => {
+      console.log('Server closed');
+      process.exit(0);
+    });
+    
+    // Força encerramento após timeout
+    setTimeout(() => {
+      console.error('Forcing server shutdown');
+      process.exit(1);
+    }, 5000);
+  });
+});
