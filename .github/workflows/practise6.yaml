@@ -10,7 +10,7 @@ env:
   PORT: 8080  # Definindo a variável PORT globalmente
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
     services:
       mongo:
@@ -68,11 +68,13 @@ jobs:
           MONGODB_PASSWORD: 123456
           MONGODB_DB_NAME: curso_git
           PORT: ${{ env.PORT }}  # Garantindo consistência
-        run: npm run test:integration
-
-  build:
-    needs: test
+        run: npm run test
+      - name: Output info
+        run: echo "MONGODB_CLUSTER_ADDRESS=${{ env.MONGODB_CLUSTER_ADDRESS }}, MONGODB_USERNAME=${{ env.MONGODB_USERNAME }},  MONGODB_DB_NAME=${{ env.MONGODB_DB_NAME }}, PORT=${{ env.PORT }}"
+          
+  deploy:
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Output info
-        run: "echo MONGO_DB_TIMEOUT: $MONGO_DB_TIMEOUT"
+        run: echo "..."

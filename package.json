@@ -5,10 +5,7 @@
   "main": "dist/src/server.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
-
     "build": "tsc && copyfiles -u 1 src/**/*.json src/**/*.graphql src/**/*.gql src/swagger/*.json dist/src",
-
-
     "start": "node dist/src/server.js",
     "test": "jest --detectOpenHandles --forceExit",
     "test:watch": "jest --watch",
