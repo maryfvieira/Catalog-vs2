@@ -55,7 +55,7 @@ jobs:
       - name: Run tests with server
         env:
           PORT: ${{ env.PORT }}
-          HOST: ${{ env.HOST }}
+          HOST: http://localhost
           NODE_ENV: test
           CI: true
           MONGODB_CLUSTER_ADDRESS: localhost
