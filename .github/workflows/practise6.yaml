@@ -7,7 +7,7 @@ on:
 env:
   MONGODB_PORT: 27017
   MONGO_DB_TIMEOUT: 15000
-  PORT: 8080  # Definindo a variável PORT globalmente
+  PORT: 3000  # Definindo a variável PORT globalmente
 
 jobs:
   build:
