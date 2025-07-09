@@ -55,6 +55,7 @@ jobs:
       - name: Run tests with server
         env:
           PORT: ${{ env.PORT }}
+          HOST: ${{ env.HOST }}
           NODE_ENV: test
           CI: true
           MONGODB_CLUSTER_ADDRESS: localhost
@@ -70,7 +71,7 @@ jobs:
           npx wait-on http://127.0.0.1:$PORT
     
           # Executa os testes
-          npm run test
+          npm run test:integration
           TEST_EXIT_CODE=$?
     
           # Encerra o servidor
