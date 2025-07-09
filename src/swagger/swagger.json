@@ -2,119 +2,171 @@
   "openapi": "3.0.0",
   "info": {
     "title": "Product API",
-    "version": "1.0.0"
+    "version": "1.0.0",
+    "description": "API para gerenciamento de produtos"
   },
   "paths": {
-    "/products": {
+    "/product/all": {
       "get": {
-        "summary": "Get all products",
+        "summary": "Obter todos os produtos",
+        "operationId": "getAllProducts",
         "responses": {
           "200": {
-            "description": "List of products",
+            "description": "Lista de produtos",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": { "$ref": "#/components/schemas/Product" }
+                  "items": {
+                    "$ref": "#/components/schemas/Product"
+                  }
                 }
               }
             }
           }
         }
-      },
+      }
+    },
+    "/product": {
       "post": {
-        "summary": "Create a new product",
+        "summary": "Criar um novo produto",
+        "operationId": "createProduct",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ProductInput" }
+              "schema": {
+                "$ref": "#/components/schemas/ProductCreateDto"
+              }
             }
           }
         },
         "responses": {
           "201": {
-            "description": "Product created",
+            "description": "Produto criado",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Product" }
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
               }
             }
           },
-          "400": { "description": "Invalid input" }
+          "400": {
+            "description": "Entrada inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          }
         }
       }
     },
-    "/products/{id}": {
+    "/product/{id}": {
       "get": {
-        "summary": "Get product by ID",
+        "summary": "Obter produto por ID",
+        "operationId": "getProductById",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "schema": { "type": "string" },
-            "description": "MongoDB ObjectID"
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID do produto (ObjectID)"
           }
         ],
         "responses": {
           "200": {
-            "description": "Product found",
+            "description": "Produto encontrado",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Product" }
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
               }
             }
           },
-          "404": { "description": "Product not found" }
+          "404": {
+            "description": "Produto não encontrado"
+          }
         }
       },
       "put": {
-        "summary": "Update a product",
+        "summary": "Atualizar um produto",
+        "operationId": "updateProduct",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "schema": { "type": "string" },
-            "description": "MongoDB ObjectID"
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID do produto (ObjectID)"
           }
         ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ProductUpdate" }
+              "schema": {
+                "$ref": "#/components/schemas/ProductUpdateDto"
+              }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Product updated",
+            "description": "Produto atualizado",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Product" }
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
               }
             }
           },
-          "400": { "description": "Invalid input" },
-          "404": { "description": "Product not found" }
+          "400": {
+            "description": "Entrada inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Produto não encontrado"
+          }
         }
       },
       "delete": {
-        "summary": "Delete a product",
+        "summary": "Excluir um produto",
+        "operationId": "deleteProduct",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "schema": { "type": "string" },
-            "description": "MongoDB ObjectID"
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID do produto (ObjectID)"
           }
         ],
         "responses": {
-          "204": { "description": "Product deleted" },
-          "404": { "description": "Product not found" }
+          "200": {
+            "description": "Produto excluído com sucesso"
+          },
+          "404": {
+            "description": "Produto não encontrado"
+          }
         }
       }
     }
@@ -123,47 +175,105 @@
     "schemas": {
       "Product": {
         "type": "object",
+        "required": ["id", "name", "price"],
         "properties": {
-          "id": { 
+          "id": {
             "type": "string",
             "example": "6624b5c9a78d935e5e7d3f2a"
           },
-          "name": { "type": "string", "example": "Smartphone" },
-          "price": { "type": "number", "example": 999.99 },
-          "description": { 
+          "name": {
             "type": "string",
-            "example": "Latest model smartphone"
+            "example": "Smartphone"
+          },
+          "price": {
+            "type": "number",
+            "format": "double",
+            "example": 999.99
+          },
+          "description": {
+            "type": "string",
+            "example": "Último modelo de smartphone",
+            "nullable": true
           }
-        },
-        "required": ["id", "name", "price", "description"]
+        }
       },
-      "ProductInput": {
+      "ProductCreateDto": {
+        "type": "object",
+        "required": ["name", "price"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Smartphone",
+            "minLength": 1
+          },
+          "price": {
+            "type": "number",
+            "format": "double",
+            "minimum": 0.01,
+            "example": 999.99
+          },
+          "description": {
+            "type": "string",
+            "example": "Último modelo de smartphone",
+            "nullable": true
+          }
+        }
+      },
+      "ProductUpdateDto": {
         "type": "object",
         "properties": {
-          "name": { "type": "string", "example": "Smartphone" },
-          "price": { "type": "number", "example": 999.99 },
-          "description": { 
+          "name": {
             "type": "string",
-            "example": "Latest model smartphone"
+            "example": "Smartphone Premium",
+            "minLength": 1
+          },
+          "price": {
+            "type": "number",
+            "format": "double",
+            "minimum": 0.01,
+            "example": 1299.99
+          },
+          "description": {
+            "type": "string",
+            "example": "Modelo premium com câmera avançada",
+            "nullable": true
           }
         },
-        "required": ["name", "price"]
+        "minProperties": 1
       },
-      "ProductUpdate": {
+      "ValidationError": {
         "type": "object",
         "properties": {
-          "name": { "type": "string", "example": "Updated Smartphone" },
-          "price": { "type": "number", "example": 1099.99 },
-          "description": { 
+          "statusCode": {
+            "type": "integer",
+            "example": 400
+          },
+          "message": {
             "type": "string",
-            "example": "Updated description"
+            "example": "Validation failed"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "property": {
+                  "type": "string",
+                  "example": "price"
+                },
+                "constraints": {
+                  "type": "object",
+                  "properties": {
+                    "min": {
+                      "type": "string",
+                      "example": "Price must be greater than 0"
+                    }
+                  }
+                }
+              }
+            }
           }
-        },
-        "anyOf": [
-          { "required": ["name"] },
-          { "required": ["price"] },
-          { "required": ["description"] }
-        ]
+        }
       }
     }
   }

@@ -7,11 +7,11 @@ import { validationMiddleware } from '../middlewares/validation.middleware';
 import { ProductCreateDto } from '../dto/product-create.dto';
 import { ProductUpdateDto } from '../dto/product-update.dto';
 
-@controller('/products')
+@controller('/product')
 export class ProductController {
   constructor(@inject(TYPES.ProductService) private service: IProductService) {}
 
-  @httpGet('/')
+  @httpGet('/all')
   getAll() {
     return this.service.getAll();
   }
