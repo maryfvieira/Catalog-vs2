@@ -36,19 +36,19 @@ test.describe('ProductController REST API', () => {
     expect(Array.isArray(data)).toBeTruthy();
   });
 
-  // test('POST /products - deve criar um produto', async ({ request }) => {
-  //   console.log(`Testando endpoint GET ${baseURL}/product`);
+  test('POST /products - deve criar um produto', async ({ request }) => {
+    console.log(`Testando endpoint GET ${baseURL}/product`);
 
-  //   const response = await request.post(`${baseURL}/product`, {
-  //     data: newProduct
-  //   });
+    const response = await request.post(`${baseURL}/product`, {
+      data: newProduct
+    });
 
-  //   expect(response.status()).toBe(200);
-  //   const created = await response.json();
-  //   expect(created).toHaveProperty('id');
-  //   expect(created.name).toBe(newProduct.name);
-  //   createdProductId = created.id;
-  // });
+    expect(response.status()).toBe(200);
+    const created = await response.json();
+    expect(created).toHaveProperty('id');
+    expect(created.name).toBe(newProduct.name);
+    createdProductId = created.id;
+  });
 
   // test('GET /product/:id - deve buscar produto por id', async ({ request }) => {
   //   const response = await request.get(`${baseURL}/product/${createdProductId}`);
