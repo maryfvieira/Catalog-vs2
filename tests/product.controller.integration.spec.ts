@@ -3,7 +3,8 @@ import { test, expect, request } from '@playwright/test';
 
 const port = process.env.PORT || 3000;
 const host = process.env.HOST || 'http://localhost'
-const baseURL = `${host}:${port}`;
+
+const baseURL = `http://127.0.0.1:${port}` 
 
 // Dados mock para criar e atualizar produtos
 const newProduct = {

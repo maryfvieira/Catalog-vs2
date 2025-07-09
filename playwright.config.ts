@@ -25,7 +25,7 @@ const config = {
     reporter: 'html',
     /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
     use: {
-      baseURL: `${process.env.HOST}:${process.env.PORT}`,
+      baseURL: `http://127.0.0.1:${process.env.PORT}`,
     },
   };
   
