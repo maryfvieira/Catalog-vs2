@@ -61,27 +61,8 @@ jobs:
           MONGODB_USERNAME: user
           MONGODB_PASSWORD: 123456
           MONGODB_DB_NAME: curso_git
-        run: |
-          # Inicia o servidor em segundo plano
-          npm start &
-          SERVER_PID=$!
-    
-          # Aguarda o servidor iniciar
-          npx wait-on http://127.0.0.1:$PORT
-    
-          # Executa os testes
-          npm run test:integration
-          TEST_EXIT_CODE=$?
-    
-          # Encerra o servidor
-          kill $SERVER_PID
-          wait $SERVER_PID
-    
-          # Sai com o código dos testes
-          exit $TEST_EXIT_CODE
+        run: npm run test:e2e
 
-          
-    
   deploy:
     needs: build
     runs-on: ubuntu-latest
