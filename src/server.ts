@@ -8,6 +8,11 @@ import swaggerUi from 'swagger-ui-express';
 const swaggerDoc = require('./swagger/swagger.json');
 import { ValidationError } from 'class-validator';
 import { classValidatorError } from './middlewares/validation.middleware'; // Novo middleware
+import dotenv from 'dotenv';
+import dotenvExpand from 'dotenv-expand';
+
+const env = dotenv.config();
+dotenvExpand.expand(env);
 
 const server = new InversifyExpressServer(container);
 
