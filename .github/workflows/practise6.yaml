@@ -7,11 +7,12 @@ on:
 env:
   MONGODB_PORT: 27017
   MONGO_DB_TIMEOUT: 15000
-  PORT: 3000  # Definindo a variável PORT globalmente
+  PORT: 3000
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     services:
       mongo:
         image: mongo:6.0
@@ -28,19 +29,25 @@ jobs:
           --health-retries=5
 
     steps:
-      - name: Set database connection string
+      - name: Set database environment variables
         run: |
           echo "MONGODB_CLUSTER_ADDRESS=localhost" >> $GITHUB_ENV
           echo "MONGODB_USERNAME=user" >> $GITHUB_ENV
           echo "MONGODB_PASSWORD=123456" >> $GITHUB_ENV
           echo "MONGODB_DB_NAME=curso_git" >> $GITHUB_ENV
 
-      - name: Run contract tests
+      - name: Install Mongo Shell (mongosh)
         run: |
+          curl -fsSL https://pgp.mongodb.com/server-6.0.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-6.0.gpg --dearmor
+          echo "deb [ signed-by=/usr/share/keyrings/mongodb-server-6.0.gpg ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
+          sudo apt-get update
+          sudo apt-get install -y mongodb-mongosh
 
-          echo "MONGO_URI=mongodb://user:123456@localhost:27017/curso_git?authSource=curso_git&replicaSet=rs0" >> $GITHUB_ENV
+      - name: Test MongoDB connection
+        run: |
+          echo "MONGO_URI=mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_CLUSTER_ADDRESS}:${MONGODB_PORT}/${MONGODB_DB_NAME}?authSource=${MONGODB_DB_NAME}&replicaSet=rs0" >> $GITHUB_ENV
           echo "Testando acesso ao Mongo..."
-          mongo "$MONGO_URI" --eval "db.runCommand({ connectionStatus: 1 })"
+          mongosh "$MONGO_URI" --eval "db.runCommand({ connectionStatus: 1 })"
 
       - name: Checkout code
         uses: actions/checkout@v3
@@ -60,11 +67,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Passo crítico: Resolver aliases durante o build
       - name: Build project
         run: |
           npm run build
-          npx tsc-alias -v  # Resolve caminhos de aliases
+          npx tsc-alias -v
 
       - name: Run tests with server
         env:
@@ -75,7 +81,7 @@ jobs:
           MONGODB_USERNAME: user
           MONGODB_PASSWORD: 123456
           MONGODB_DB_NAME: curso_git
-          DATABASE_URL: mongodb://${{ env.MONGODB_USERNAME }}:${{ env.MONGODB_PASSWORD }}@${{ env.MONGODB_CLUSTER_ADDRESS }}:${{ env.MONGODB_PORT }}/${{env.MONGODB_DB_NAME}}?authSource=${{env.MONGODB_DB_NAME}}&replicaSet=rs0
+          DATABASE_URL: mongodb://${{ env.MONGODB_USERNAME }}:${{ env.MONGODB_PASSWORD }}@${{ env.MONGODB_CLUSTER_ADDRESS }}:${{ env.MONGODB_PORT }}/${{ env.MONGODB_DB_NAME }}?authSource=${{ env.MONGODB_DB_NAME }}&replicaSet=rs0
         run: npm run test:e2e
 
   deploy:
@@ -83,4 +89,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Output info
-        run: echo "..."
+        run: echo "Deploy step"
