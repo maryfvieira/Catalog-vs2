@@ -72,6 +72,24 @@ jobs:
         run: |
           npm run build
           npx tsc-alias -v
+          
+      - name: Wait for server healthcheck
+        run: |
+          echo "⌛ Aguardando rota de healthcheck..."
+          for i in {1..30}; do
+            status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/health)
+            if [ "$status" -eq 200 ]; then
+              echo "✅ Healthcheck OK"
+              break
+            fi
+            echo "Tentativa $i: aguardando..."
+            sleep 1
+          done
+
+          if [ "$status" -ne 200 ]; then
+            echo "❌ Healthcheck falhou após 30s"
+            exit 1
+          fi
 
       - name: Run tests with server
         env:

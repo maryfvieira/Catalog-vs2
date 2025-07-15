@@ -3,6 +3,7 @@ import 'dotenv/config';
 import { InversifyExpressServer } from 'inversify-express-utils';
 import express from 'express';
 import './controllers/product.controller';
+import './controllers/health.controller';
 import { container } from './inversify/inversify.config';
 import swaggerUi from 'swagger-ui-express';
 const swaggerDoc = require('./swagger/swagger.json');
@@ -44,7 +45,7 @@ async function dataBaseLoader() {
   try {
     await prisma.$connect();
     console.log('✅ Prisma conectado com sucesso');
-    prisma.$disconnect();
+    //prisma.$disconnect();
 
   } catch (err) {
     console.error('❌ Erro ao conectar com banco de dados:', err);
