@@ -15,6 +15,7 @@ export class ProductController {
   @httpGet('/all')
   async getAll(_: Request, res: Response) {
 
+    console.log('Get all requested');
     return await this.service.getAll();
     // try {
     //   const result = await this.service.getAll();
