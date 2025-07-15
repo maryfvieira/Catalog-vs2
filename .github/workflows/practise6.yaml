@@ -9,10 +9,6 @@ env:
   MONGODB_PORT: 27017
   MONGO_DB_TIMEOUT: 15000
   PORT: 3000
-  MONGODB_CLUSTER_ADDRESS: localhost
-  MONGODB_USERNAME: user
-  MONGODB_PASSWORD: 123456
-  MONGODB_DB_NAME: curso_git
 
 jobs:
   build:
@@ -24,77 +20,74 @@ jobs:
         ports:
           - 27017:27017
         options: >-
-          --name mongodb
-          --entrypoint mongod
-          mongo:6.0
-          --replSet rs0
-          --bind_ip_all
+          --replSet rs0 --bind_ip_all
 
     steps:
-      - name: Checkout código
-        uses: actions/checkout@v3
+      - name: Set database environment variables
+        run: |
+          echo "MONGODB_CLUSTER_ADDRESS=localhost" >> $GITHUB_ENV
+          echo "MONGODB_USERNAME=user" >> $GITHUB_ENV
+          echo "MONGODB_PASSWORD=123456" >> $GITHUB_ENV
+          echo "MONGODB_DB_NAME=curso_git" >> $GITHUB_ENV
 
-      - name: Instala Mongo Shell (mongosh)
+      - name: Install Mongo Shell (mongosh)
         run: |
           curl -fsSL https://pgp.mongodb.com/server-6.0.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-6.0.gpg --dearmor
           echo "deb [ signed-by=/usr/share/keyrings/mongodb-server-6.0.gpg ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
           sudo apt-get update
           sudo apt-get install -y mongodb-mongosh
 
-      - name: Inicializa o Replica Set do Mongo
+      - name: Wait for MongoDB to be ready
         run: |
           echo "⏳ Aguardando MongoDB iniciar..."
           for i in {1..20}; do
-            mongosh --quiet --eval "db.adminCommand('ping')" localhost:27017 && break
+            if mongosh "mongodb://localhost:27017" --eval "db.runCommand({ ping: 1 })" > /dev/null 2>&1; then
+              echo "✅ MongoDB está pronto"
+              break
+            fi
             echo "Tentando conexão... ($i)"
             sleep 2
           done
 
+      - name: Initialize Replica Set
+        run: |
           echo "🔧 Inicializando Replica Set..."
-          mongosh --quiet --eval "rs.initiate({
-            _id: 'rs0',
-            members: [ { _id: 0, host: 'localhost:27017' } ]
-          })"
-
+          mongosh "mongodb://localhost:27017" <<EOF
+          rs.initiate({
+            _id: "rs0",
+            members: [{ _id: 0, host: "localhost:27017" }]
+          })
+EOF
           sleep 5
 
-          echo "👤 Criando usuário de autenticação..."
-          mongosh --quiet --eval "
-            use curso_git;
-            db.createUser({
-              user: 'user',
-              pwd: '123456',
-              roles: [ { role: 'readWrite', db: 'curso_git' } ]
-            });
-          "
+      - name: Check out code
+        uses: actions/checkout@v3
 
-      - name: Define variáveis de ambiente
-        run: |
-          echo "DATABASE_URL=mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_CLUSTER_ADDRESS}:${MONGODB_PORT}/${MONGODB_DB_NAME}?authSource=${MONGODB_DB_NAME}&replicaSet=rs0" >> $GITHUB_ENV
-
-      - name: Configura Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Cache dependências
+      - name: Cache dependencies
         uses: actions/cache@v4
         with:
           path: ~/.npm
           key: deps-node-modules-${{ hashFiles('**/package-lock.json') }}
 
-      - name: Instala dependências
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
         run: npm ci
 
-      - name: Build do projeto
+      - name: Build project
         run: |
           npm run build
           npx tsc-alias -v
 
-      - name: Healthcheck da API
+      - name: Wait for app healthcheck
         run: |
           echo "⌛ Aguardando rota de healthcheck..."
+          node dist/server.js &
+          SERVER_PID=$!
           for i in {1..30}; do
             status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/health)
             if [ "$status" -eq 200 ]; then
@@ -104,23 +97,22 @@ jobs:
             echo "Tentativa $i: aguardando..."
             sleep 1
           done
-
           if [ "$status" -ne 200 ]; then
             echo "❌ Healthcheck falhou após 30s"
+            kill $SERVER_PID
             exit 1
           fi
-
-      - name: Executa testes E2E
-        run: bash scripts/run-e2e.sh
-        env:
-          PORT: ${{ env.PORT }}
-          NODE_ENV: test
-          CI: true
-          DATABASE_URL: ${{ env.DATABASE_URL }}
+          echo "🧪 Executando testes Playwright..."
+          npx playwright test
+          TEST_RESULT=$?
+          echo "🛑 Encerrando servidor"
+          kill $SERVER_PID
+          wait $SERVER_PID
+          exit $TEST_RESULT
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Exibe mensagem de deploy
-        run: echo "🚀 Deploy iniciado (simulado)"
+      - name: Output info
+        run: echo "📦 Deploy step (placeholder)"
