@@ -19,6 +19,10 @@ jobs:
         image: mongo:6.0
         ports:
           - 27017:27017
+        env:
+          MONGO_INITDB_ROOT_USERNAME: user
+          MONGO_INITDB_ROOT_PASSWORD: 123456
+          MONGO_INITDB_DATABASE: curso_git
         options: >-
           --replSet rs0 --bind_ip_all
 
@@ -30,37 +34,7 @@ jobs:
           echo "MONGODB_PASSWORD=123456" >> $GITHUB_ENV
           echo "MONGODB_DB_NAME=curso_git" >> $GITHUB_ENV
 
-      - name: Install Mongo Shell (mongosh)
-        run: |
-          curl -fsSL https://pgp.mongodb.com/server-6.0.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-6.0.gpg --dearmor
-          echo "deb [ signed-by=/usr/share/keyrings/mongodb-server-6.0.gpg ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
-          sudo apt-get update
-          sudo apt-get install -y mongodb-mongosh
-
-      - name: Wait for MongoDB to be ready
-        run: |
-          echo "⏳ Aguardando MongoDB iniciar..."
-          for i in {1..20}; do
-            if mongosh "mongodb://localhost:27017" --eval "db.runCommand({ ping: 1 })" > /dev/null 2>&1; then
-              echo "✅ MongoDB está pronto"
-              break
-            fi
-            echo "Tentando conexão... ($i)"
-            sleep 2
-          done
-
-      - name: Initialize Replica Set
-        run: |
-          echo "🔧 Inicializando Replica Set..."
-          mongosh "mongodb://localhost:27017" <<EOF
-          rs.initiate({
-            _id: "rs0",
-            members: [{ _id: 0, host: "localhost:27017" }]
-          })
-EOF
-          sleep 5
-
-      - name: Check out code
+      - name: Checkout code
         uses: actions/checkout@v3
 
       - name: Cache dependencies
@@ -78,16 +52,38 @@ EOF
       - name: Install dependencies
         run: npm ci
 
+      - name: Initialize Replica Set
+        run: |
+          echo "⏳ Inicializando Replica Set..."
+          mongosh --eval "rs.initiate({_id: 'rs0', members: [{ _id: 0, host: 'localhost:27017' }]})"
+          echo "✅ Replica Set inicializado"
+          sleep 10  # aguarda o Mongo eleger o primary
+
       - name: Build project
         run: |
           npm run build
           npx tsc-alias -v
 
-      - name: Wait for app healthcheck
+      - name: Wait for MongoDB to be ready
+        run: |
+          for i in {1..30}; do
+            mongosh --eval "db.adminCommand('ping')" && break
+            echo "Tentativa $i: aguardando MongoDB..."
+            sleep 1
+          done
+
+      - name: Run tests with server
+        env:
+          PORT: ${{ env.PORT }}
+          NODE_ENV: test
+          CI: true
+          MONGODB_CLUSTER_ADDRESS: localhost
+          MONGODB_USERNAME: user
+          MONGODB_PASSWORD: 123456
+          MONGODB_DB_NAME: curso_git
+          DATABASE_URL: mongodb://${{ env.MONGODB_USERNAME }}:${{ env.MONGODB_PASSWORD }}@${{ env.MONGODB_CLUSTER_ADDRESS }}:${{ env.MONGODB_PORT }}/${{ env.MONGODB_DB_NAME }}?authSource=${{ env.MONGODB_DB_NAME }}&replicaSet=rs0
         run: |
           echo "⌛ Aguardando rota de healthcheck..."
-          node dist/server.js &
-          SERVER_PID=$!
           for i in {1..30}; do
             status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/health)
             if [ "$status" -eq 200 ]; then
@@ -97,22 +93,18 @@ EOF
             echo "Tentativa $i: aguardando..."
             sleep 1
           done
+
           if [ "$status" -ne 200 ]; then
             echo "❌ Healthcheck falhou após 30s"
-            kill $SERVER_PID
             exit 1
           fi
-          echo "🧪 Executando testes Playwright..."
-          npx playwright test
-          TEST_RESULT=$?
-          echo "🛑 Encerrando servidor"
-          kill $SERVER_PID
-          wait $SERVER_PID
-          exit $TEST_RESULT
+
+          echo "🚀 Executando testes Playwright..."
+          npm run test:e2e
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Output info
-        run: echo "📦 Deploy step (placeholder)"
+        run: echo "Deploy step"
