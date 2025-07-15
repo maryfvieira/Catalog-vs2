@@ -43,6 +43,19 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y mongodb-mongosh
 
+      - name: Initialize MongoDB Replica Set
+        run: |
+          echo "⏳ Inicializando replicaset..."
+          mongosh --host localhost -u "user" -p "123456" --authenticationDatabase "curso_git" <<EOF
+          rs.initiate({
+            _id: "rs0",
+            members: [ { _id: 0, host: "localhost:27017" } ]
+          })
+          EOF
+
+          echo "✅ ReplicaSet inicializado"
+          sleep 10  # Aguarda o Mongo eleger o primary
+
       - name: Test MongoDB connection
         run: |
           echo "MONGO_URI=mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_CLUSTER_ADDRESS}:${MONGODB_PORT}/${MONGODB_DB_NAME}?authSource=${MONGODB_DB_NAME}&replicaSet=rs0" >> $GITHUB_ENV
