@@ -48,6 +48,7 @@ jobs:
           echo "MONGO_URI=mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_CLUSTER_ADDRESS}:${MONGODB_PORT}/${MONGODB_DB_NAME}?authSource=${MONGODB_DB_NAME}&replicaSet=rs0" >> $GITHUB_ENV
           echo "Testando acesso ao Mongo..."
           mongosh "$MONGO_URI" --eval "db.runCommand({ connectionStatus: 1 })"
+          echo "$MONGO_URI"
 
       - name: Checkout code
         uses: actions/checkout@v3
@@ -82,7 +83,9 @@ jobs:
           MONGODB_PASSWORD: 123456
           MONGODB_DB_NAME: curso_git
           DATABASE_URL: mongodb://${{ env.MONGODB_USERNAME }}:${{ env.MONGODB_PASSWORD }}@${{ env.MONGODB_CLUSTER_ADDRESS }}:${{ env.MONGODB_PORT }}/${{ env.MONGODB_DB_NAME }}?authSource=${{ env.MONGODB_DB_NAME }}&replicaSet=rs0
-        run: npm run test:e2e
+        run: |
+          echo "$DATABASE_URL"
+          npm run test:e2e
 
   deploy:
     needs: build
