@@ -1,5 +1,6 @@
 import { controller, httpGet, httpPost, httpPut, httpDelete, requestParam, requestBody } from 'inversify-express-utils';
 import { inject } from 'inversify';
+import { Request, Response } from 'express';
 import { IProductService } from '../interfaces/product-service.interface';
 import { TYPES } from '../inversify/types';
 import { Product } from '../model/product';
@@ -12,9 +13,17 @@ export class ProductController {
   constructor(@inject(TYPES.ProductService) private service: IProductService) {}
 
   @httpGet('/all')
-  getAll() {
-    return this.service.getAll();
-  }
+  async getAll(_: Request, res: Response) {
+
+    return await this.service.getAll();
+    // try {
+    //   const result = await this.service.getAll();
+    //   res.json(result);
+    // } catch (error) {
+    //   console.error('❌ Erro ao buscar produtos:', error);
+    //   res.status(500).json({ error: 'Erro interno' });
+    // }
+}
 
   @httpGet('/:id')
   getById(@requestParam('id') id: string) {
