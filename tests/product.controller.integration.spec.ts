@@ -4,7 +4,8 @@ import { test, expect, request } from '@playwright/test';
 const port = process.env.PORT || 3000;
 const host = process.env.HOST || 'http://localhost'
 
-const baseURL = `http://127.0.0.1:${port}` 
+//const baseURL = `http://127.0.0.1:${port}` 
+const baseURL = `${host}:${port}`;
 
 // Dados mock para criar e atualizar produtos
 const newProduct = {
@@ -30,8 +31,10 @@ test.describe('ProductController REST API', () => {
 
 
   test('GET /products - deve retornar lista de produtos (possivelmente vazia)', async ({ request }) => {
-    console.log(`Testando endpoint GET ${baseURL}/product/all`);
-    const response = await request.get(`${baseURL}/product/all`);
+    
+    const url = `${baseURL}/product/all`
+    console.log(`Testando endpoint GET em: ${url}`);
+    const response = await request.get(url);
     expect(response.status()).toBe(200);
     const data = await response.json();
     expect(Array.isArray(data)).toBeTruthy();
