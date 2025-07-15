@@ -16,14 +16,15 @@ export class ProductController {
   async getAll(_: Request, res: Response) {
 
     console.log('Get all requested');
-    return await this.service.getAll();
-    // try {
-    //   const result = await this.service.getAll();
-    //   res.json(result);
-    // } catch (error) {
-    //   console.error('❌ Erro ao buscar produtos:', error);
-    //   res.status(500).json({ error: 'Erro interno' });
-    // }
+
+    //return await this.service.getAll();
+    try {
+      const result = await this.service.getAll();
+      res.json(result);
+    } catch (error) {
+      console.error('❌ Erro ao buscar produtos:', error);
+      res.status(500).json({ error: 'Erro interno' });
+    }
 }
 
   @httpGet('/:id')
