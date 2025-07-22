@@ -1,4 +1,4 @@
-import { injectable } from 'inversify';
+import { inject, injectable } from 'inversify';
 import { PrismaClient } from '@prisma/client';
 import { IProductRepository } from '../interfaces/product-repository.interface';
 import { Product } from '../model/product';
@@ -7,10 +7,13 @@ import {
   PrismaClientKnownRequestError,
 } from '@prisma/client/runtime/library';
 import { DatabaseError } from '../errors/database-error';
+import { TYPES } from '../inversify/types';
 
 @injectable()
 export class ProductRepository implements IProductRepository {
-  private prisma = new PrismaClient();
+  constructor(
+    @inject(TYPES.PrismaClient) private prisma: PrismaClient
+  ) {}
 
   private async safeExecute<T>(operation: () => Promise<T>): Promise<T> {
     try {
