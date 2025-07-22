@@ -1,17 +1,21 @@
 // tests/setup.ts
-import { setupInMemoryDatabase, resetDatabase } from './setup-db';
+import { setupInMemoryDatabase, teardownInMemoryDatabase } from './setup-db';
+import { getPrismaClient } from '../src/prisma/prisma.client';
 
 beforeAll(async () => {
-  process.env.NODE_ENV = 'test'; // força o uso do banco em memória
+  process.env.NODE_ENV = 'test';
   await setupInMemoryDatabase();
-});
-
-beforeEach(async () => {
-  await resetDatabase(); // limpa a base entre os testes
+  const prisma = getPrismaClient();
+  await prisma.$connect();
 });
 
 afterAll(async () => {
-  // finaliza o banco após todos os testes
-  const { teardownInMemoryDatabase } = await import('./setup-db');
+  const prisma = getPrismaClient();
+  await prisma.$disconnect();
   await teardownInMemoryDatabase();
+});
+
+beforeEach(async () => {
+  const prisma = getPrismaClient();
+  await prisma.product.deleteMany();
 });

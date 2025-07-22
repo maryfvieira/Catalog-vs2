@@ -36,19 +36,24 @@ jobs:
           npm run build
           npx tsc-alias -v
 
-      - name: Run unit tests with in-memory DB
+      - name: Run unit tests with mock
         env:
           NODE_ENV: test
           CI: true
         run: npm run test:ci
+
+      - name: Give execution permission to test script
+        run: chmod +x scripts/run-tests.sh
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
 
       - name: Run e2e tests with in-memory DB
         env:
           PORT: ${{ env.PORT }}
           NODE_ENV: test
           CI: true
-        run: |
-          bash scripts/run-e2e.sh
+        run: npm run test:e2e
 
   deploy:
     needs: build-and-test
