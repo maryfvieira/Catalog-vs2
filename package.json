@@ -10,7 +10,7 @@
     "test": "jest --detectOpenHandles --forceExit",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:ci": "NODE_ENV=test jest --setupFilesAfterEnv=./tests/setup.ts",
+    "test:ci": "NODE_ENV=test jest",
     "test:integration": "npx playwright test",
     "postinstall": "prisma generate",
     "test:e2e": "bash scripts/run-e2e.sh"
