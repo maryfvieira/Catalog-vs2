@@ -10,9 +10,19 @@ import { getPrismaClient } from '../prisma/prisma.client';
 
 const container = new Container();
 
-const prisma = getPrismaClient(); // <- usa função dinâmica
-container.bind<PrismaClient>(TYPES.PrismaClient).toConstantValue(prisma);
-container.bind<IProductService>(TYPES.ProductService).to(ProductService);
-container.bind<IProductRepository>(TYPES.ProductRepository).to(ProductRepository);
+// ✅ Verifica se já existe binding para evitar duplicidade
+if (!container.isBound(TYPES.PrismaClient)) {
+  container
+    .bind<PrismaClient>(TYPES.PrismaClient)
+    .toDynamicValue(() => getPrismaClient());
+}
+
+if (!container.isBound(TYPES.ProductService)) {
+  container.bind<IProductService>(TYPES.ProductService).to(ProductService);
+}
+
+if (!container.isBound(TYPES.ProductRepository)) {
+  container.bind<IProductRepository>(TYPES.ProductRepository).to(ProductRepository);
+}
 
 export { container };

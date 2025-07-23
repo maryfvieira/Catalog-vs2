@@ -1,18 +1,20 @@
 // src/prisma/prisma.client.ts
 import { PrismaClient } from '@prisma/client';
 
-let prisma: PrismaClient;
+let prisma: PrismaClient | null = null;
+let lastDatabaseUrl: string | null = null;
 
 export const getPrismaClient = () => {
-  if (!prisma) {
-    const dbUrl = process.env.DATABASE_URL;
-    if (!dbUrl) {
-      throw new Error('DATABASE_URL não está definida');
-    }
+  const currentDatabaseUrl = process.env.DATABASE_URL;
 
-    prisma = new PrismaClient({
-      datasources: { db: { url: dbUrl } },
-    });
+  if (!prisma || lastDatabaseUrl !== currentDatabaseUrl) {
+    if (prisma) {
+      console.log('🔄 DATABASE_URL mudou, criando nova instância do PrismaClient');
+      prisma.$disconnect();
+    }
+    lastDatabaseUrl = currentDatabaseUrl || '';
+    console.log('♻️ Criando PrismaClient com:', lastDatabaseUrl);
+    prisma = new PrismaClient();
   }
 
   return prisma;
