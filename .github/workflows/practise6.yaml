@@ -33,7 +33,7 @@ jobs:
 
       - name: Build project
         run: |
-          npm run build
+          npm run build2
           npx tsc-alias -v
 
       - name: Run unit tests with mock
