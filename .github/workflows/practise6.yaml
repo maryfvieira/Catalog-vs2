@@ -43,7 +43,7 @@ jobs:
         run: npm run test:ci
 
       - name: Give execution permission to test script
-        run: chmod +x scripts/run-tests.sh
+        run: chmod +x dist/scripts/run-tests.sh
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
@@ -53,7 +53,7 @@ jobs:
           PORT: ${{ env.PORT }}
           NODE_ENV: test
           CI: true
-        run: npm run test:e2e
+        run: ./dist/scripts/run-tests.sh
 
   deploy:
     needs: build-and-test
