@@ -47,33 +47,26 @@ jobs:
           npm run build
           npx tsc-alias -v
 
-      - name: Run tests with server
-        env: 
-          PORT: ${{ env.PORT }}
+      - name: Run unit tests with mock
+        env:
+          NODE_ENV: test
+          CI: true
+        run: npm run test
+
+      - name: Run e2e tests with in-memory DB
+        env:
           NODE_ENV: test
           CI: true
           MONGODB_CLUSTER_ADDRESS: localhost
           MONGODB_USERNAME: user
           MONGODB_PASSWORD: 123456
           MONGODB_DB_NAME: curso_git
+          MONGODB_PORT: 27017
+          MONGO_DB_TIMEOUT: 15000
           DATABASE_URL: mongodb://user:123456@localhost:42069/curso_git?authSource=curso_git&replicaSet=test-rs
-        run: |
-          echo "⌛ Aguardando rota de healthcheck..."
-          for i in {1..30}; do
-            status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/health)
-            if [ "$status" -eq 200 ]; then
-              echo "✅ Healthcheck OK"
-              break
-            fi
-            echo "Tentativa $i: aguardando..."
-            sleep 1
-          done
-
-          if [ "$status" -ne 200 ]; then
-            echo "❌ Healthcheck falhou após 30s"
-            exit 1
-          fi
-
+        run: | 
+          echo "📌 DATABASE_URL: $DATABASE_URL"
+          
           echo "🚀 Executando testes Playwright..."
           npm run test:e2e
 
