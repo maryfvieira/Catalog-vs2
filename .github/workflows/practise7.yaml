@@ -54,17 +54,27 @@ jobs:
           CI: true
         run: npm run test
 
-      - name: Run e2e tests with in-memory DB
+      - name: Install mongosh
+        run: |
+          curl -fsSL https://pgp.mongodb.com/server-6.0.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-6.0.gpg --dearmor
+          echo "deb [signed-by=/usr/share/keyrings/mongodb-server-6.0.gpg] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
+          sudo apt-get update
+          sudo apt-get install -y mongodb-mongosh
+
+      - name: Check mongosh version
+        run: mongosh --version
+
+      - name: Run e2e tests
         env:
           NODE_ENV: test
           CI: true
-          MONGODB_CLUSTER_ADDRESS: localhost
+          MONGODB_CLUSTER_ADDRESS: 127.0.0.1
           MONGODB_USERNAME: user
           MONGODB_PASSWORD: 123456
           MONGODB_DB_NAME: curso_git
           MONGODB_PORT: 42069
           MONGO_DB_TIMEOUT: 15000
-          DATABASE_URL: mongodb://user:123456@localhost:42069/curso_git?authSource=curso_git&replicaSet=test-rs
+          DATABASE_URL: mongodb://user:123456@127.0.0.1:42069/curso_git?authSource=curso_git&replicaSet=test-rs
         run: | 
           echo "📌 DATABASE_URL: $DATABASE_URL"
           
