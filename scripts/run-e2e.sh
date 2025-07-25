@@ -9,21 +9,42 @@ for i in {1..15}; do
   sleep 1
 done
 
-echo "⌛ Verificando conexão com MongoDB e acesso à collection products..."
+echo "⌛ Verificando conexão com MongoDB e acesso à collection 'products'..."
+
+MONGO_URI="mongodb://user:123456@127.0.0.1:42069/curso_git?authSource=curso_git&replicaSet=test-rs"
 
 for i in {1..15}; do
-  mongosh "mongodb://user:123456@127.0.0.1:42069/curso_git?authSource=curso_git&replicaSet=test-rs" \
-    --quiet \
-    --eval 'db.products.findOne()' > /dev/null 2>&1
+  echo "Tentativa $i: testando conexão com MongoDB..."
 
-  if [ $? -eq 0 ]; then
-    echo "✅ Conexão com MongoDB e acesso à collection 'products' OK"
+  OUTPUT=$(mongosh "$MONGO_URI" --quiet --eval 'db.products.stats()' 2>&1)
+  EXIT_CODE=$?
+
+  if [ $EXIT_CODE -eq 0 ]; then
+    echo "✅ Conexão bem-sucedida. Estatísticas da collection 'products':"
+    echo "$OUTPUT"
     break
+  else
+    echo "⚠️  Falha ao acessar a collection 'products'."
+    echo "↪️  Saída do mongosh:"
+    echo "$OUTPUT"
+    sleep 1
   fi
-
-  echo "Tentativa $i: aguardando MongoDB/autenticação/collection..."
-  sleep 1
 done
+
+if [ $EXIT_CODE -ne 0 ]; then
+  echo "❌ Falha ao conectar ao MongoDB ou acessar a collection 'products' após 15 tentativas"
+  echo "‼️ Última saída do mongosh:"
+  echo "$OUTPUT"
+  exit 1
+fi
+
+
+# Se não conseguiu conectar após 15 tentativas
+if [ $? -ne 0 ]; then
+  echo "❌ Falha ao conectar ao MongoDB ou acessar a collection 'products' após 15 tentativas"
+  exit 1
+fi
+
 
 # Se não conseguiu conectar após 15 tentativas
 if [ $? -ne 0 ]; then
