@@ -2,12 +2,8 @@
  * @see https://playwright.dev/docs/test-configuration
  * @type {import('@playwright/test').PlaywrightTestConfig}
  */
-import type { PlaywrightTestConfig } from '@playwright/test';
-
-
 const config = {
     testDir: './tests',
-    globalSetup: require.resolve('./tests/global-setup'),
     /* Maximum time one test can run for. */
     timeout: 30 * 1000,
     expect: {
