@@ -9,7 +9,6 @@ dist/
 
 # Ambiente
 .env
-.env.local
 
 # Logs
 *.log
@@ -20,3 +19,7 @@ dist/
 
 # Outros
 .DS_Store
+
+package-lock.json
+yarn.lock
+pnpm-lock.yaml  
