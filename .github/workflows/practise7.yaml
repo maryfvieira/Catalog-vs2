@@ -1,0 +1,91 @@
+name: Practise7
+
+on:
+  push:
+    branches:
+      - main
+
+
+env:
+  MONGODB_PORT: 42069
+  MONGO_DB_TIMEOUT: 15000
+  PORT: 3000
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [20.x, 22.x]
+        mongodb-version: ['6.0', '7.0', '8.0']
+
+    steps:
+    - name: Git checkout
+      uses: actions/checkout@v4
+
+    - name: Cache dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.npm
+        key: deps-node-modules-${{ hashFiles('**/package-lock.json') }}
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Start MongoDB
+      uses: supercharge/mongodb-github-action@1.12.0
+      with:
+        mongodb-version: ${{ matrix.mongodb-version }}
+        mongodb-username: user
+        mongodb-password: 123456
+        mongodb-db: curso_git
+        mongodb-replica-set: test-rs
+        mongodb-port: 42069
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build project
+      run: |
+        npm run build2
+        npx tsc-alias -v
+    
+    - name: Run tests with server
+      env: 
+        PORT: ${{ env.PORT }}
+        NODE_ENV: test
+        CI: true
+        MONGODB_CLUSTER_ADDRESS: localhost
+        MONGODB_USERNAME: user
+        MONGODB_PASSWORD: 123456
+        MONGODB_DB_NAME: curso_git
+        DATABASE_URL: mongodb://user:123456@localhost:42069/curso_git?authSource=curso_git&replicaSet=test-rs
+      run: |
+        echo "⌛ Aguardando rota de healthcheck..."
+        for i in {1..30}; do
+          status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/health)
+          if [ "$status" -eq 200 ]; then
+            echo "✅ Healthcheck OK"
+            break
+          fi
+          echo "Tentativa $i: aguardando..."
+          sleep 1
+        done
+
+        if [ "$status" -ne 200 ]; then
+          echo "❌ Healthcheck falhou após 30s"
+          exit 1
+        fi
+
+        echo "🚀 Executando testes Playwright..."
+        npm run test:e2e
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Output info
+        run: echo "Deploy step"
