@@ -3,7 +3,7 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for src/dto/product-create.dto.ts</title>
+    <title>Code coverage report for src/controllers/health.check.controller.ts</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="../../prettify.css" />
     <link rel="stylesheet" href="../../base.css" />
@@ -19,13 +19,13 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../../index.html">All files</a> / <a href="index.html">src/dto</a> product-create.dto.ts</h1>
+        <h1><a href="../../index.html">All files</a> / <a href="index.html">src/controllers</a> health.check.controller.ts</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/6</span>
+                <span class='fraction'>0/7</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/0</span>
+                <span class='fraction'>0/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/6</span>
+                <span class='fraction'>0/5</span>
             </div>
         
             
@@ -80,14 +80,7 @@
 <a name='L15'></a><a href='#L15'>15</a>
 <a name='L16'></a><a href='#L16'>16</a>
 <a name='L17'></a><a href='#L17'>17</a>
-<a name='L18'></a><a href='#L18'>18</a>
-<a name='L19'></a><a href='#L19'>19</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L18'></a><a href='#L18'>18</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -98,25 +91,29 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" >import { Expose } from 'class-transformer';</span>
-<span class="cstat-no" title="statement not covered" >import { IsNotEmpty, IsString, IsNumber, Min } from 'class-validator';</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">&nbsp;
+<span class="cstat-no" title="statement not covered" >import { controller, httpGet } from 'inversify-express-utils';</span>
+import { Request, Response } from 'express';            
+//import { inject } from 'inversify';
+//import { TYPES } from '../inversify/types';
+//import { ILogger } from '../interfaces/logger.interface';
+@controller('/health')
+export <span class="cstat-no" title="statement not covered" >class <span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" >HealthCheckController </span>{</span></span>
+	//constructor(@inject(TYPES.Logger) private logger: ILogger) {}
+<span class="fstat-no" title="function not covered" >    constructor() {}</span>
 &nbsp;
-<span class="cstat-no" title="statement not covered" >export class P</span>roductCreateDto {
-  @Expose()
-  @IsNotEmpty({ message: 'Name is required' })
-  @IsString({ message: 'Name must be a string' })
-<span class="cstat-no" title="statement not covered" >  name!: string;</span>
-&nbsp;
-  @Expose()
-  @IsNotEmpty({ message: 'Price is required' })
-  @IsNumber({}, { message: 'Price must be a number' })
-  @Min(0.01, { message: 'Price must be greater than 0' })
-<span class="cstat-no" title="statement not covered" >  price!: number;</span>
-&nbsp;
-  @Expose()
-  @IsString({ message: 'Description must be a string' })
-<span class="cstat-no" title="statement not covered" >  description!: string;</span>
+	@httpGet('/')
+	public <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >healthCheck(</span>req: Request, res: Response): void {</span>
+		//this.logger.info('Health check requested');
+<span class="cstat-no" title="statement not covered" >        console.log('Health check requested');</span>
+<span class="cstat-no" title="statement not covered" >		res.status(200).json({ message: 'ok' });</span>
+	}
 }</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
