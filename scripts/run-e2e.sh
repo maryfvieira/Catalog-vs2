@@ -1,4 +1,15 @@
 #!/bin/bash
+set -e
+
+echo "executando bash..."
+
+echo "⌛ Esperando MongoDB autenticar..."
+for i in {1..15}; do
+  mongo "mongodb://user:123456@localhost:42069/curso_git?authSource=curso_git&replicaSet=test-rs" \
+    --eval "db.stats()" > /dev/null 2>&1 && break
+  echo "Tentativa $i: aguardando MongoDB autenticar..."
+  sleep 1
+done
 
 export HOST=http://localhost
 export PORT=3000

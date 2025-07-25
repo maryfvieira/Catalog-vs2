@@ -38,6 +38,7 @@ jobs:
           mongodb-db: curso_git
           mongodb-replica-set: test-rs
           mongodb-port: 42069
+          mongodb-create-collection: products
 
       - name: Install dependencies
         run: npm ci
@@ -61,13 +62,13 @@ jobs:
           MONGODB_USERNAME: user
           MONGODB_PASSWORD: 123456
           MONGODB_DB_NAME: curso_git
-          MONGODB_PORT: 27017
+          MONGODB_PORT: 42069
           MONGO_DB_TIMEOUT: 15000
           DATABASE_URL: mongodb://user:123456@localhost:42069/curso_git?authSource=curso_git&replicaSet=test-rs
         run: | 
           echo "📌 DATABASE_URL: $DATABASE_URL"
           
-          echo "🚀 Executando testes Playwright..."
+          echo "🚀 Executando testes e2e..."
           npm run test:e2e
 
   deploy:
