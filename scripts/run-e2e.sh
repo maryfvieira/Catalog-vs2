@@ -1,8 +1,6 @@
 #!/bin/bash
 set -e
 
-echo "executando bash..."
-
 echo "⌛ Esperando MongoDB autenticar..."
 for i in {1..15}; do
   mongo "mongodb://user:123456@localhost:42069/curso_git?authSource=curso_git&replicaSet=test-rs" \
@@ -11,38 +9,37 @@ for i in {1..15}; do
   sleep 1
 done
 
-export HOST=http://localhost
-export PORT=3000
-
+echo "🔧 Buildando o projeto..."
 npm run build
+npx tsc-alias -v
+
+echo "🚀 Iniciando servidor em segundo plano..."
 node dist/server.js &
+
 SERVER_PID=$!
 
-echo "⌛ Aguardando rota de healthcheck..."
+echo "⏳ Aguardando rota de healthcheck..."
 for i in {1..30}; do
-  status=$(curl -s -o /dev/null -w "%{http_code}" "$HOST:$PORT/health")
+  status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/health)
+  echo "Tentativa $i - Status HTTP: $status"
   if [ "$status" -eq 200 ]; then
     echo "✅ Healthcheck OK"
     break
   fi
-  echo "Tentativa $i: aguardando..."
   sleep 1
 done
 
 if [ "$status" -ne 200 ]; then
-  echo "❌ Healthcheck falhou após 30s"
-  echo "🛑 Encerrando servidor"
+  echo "❌ Healthcheck falhou após 30 tentativas"
   kill $SERVER_PID
-  wait $SERVER_PID
-  exit 1
+  exit 7
 fi
 
-echo "🚀 Executando testes Playwright..."
-npx playwright test --reporter=list
-TEST_RESULT=$?
+echo "🌐 Tentando acessar diretamente a rota de healthcheck:"
+curl -v http://localhost:3000/health || true
 
-echo "🛑 Encerrando servidor"
+echo "🧪 Executando testes Playwright..."
+npm run test:e2e
+
+# Encerra o servidor
 kill $SERVER_PID
-wait $SERVER_PID
-
-exit $TEST_RESULT
