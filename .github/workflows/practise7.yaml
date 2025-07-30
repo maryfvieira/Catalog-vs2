@@ -29,6 +29,46 @@ jobs:
         with:
           node-version: 20
 
+      - name: Start MongoDB
+        uses: supercharge/mongodb-github-action@1.12.0
+        with:
+          mongodb-version: '7.0'
+          mongodb-db: curso_git
+          mongodb-replica-set: test-rs
+          mongodb-port: 27017
+          mongodb-create-collection: product
+
+      - name: Install mongosh
+        run: |
+          curl -fsSL https://pgp.mongodb.com/server-6.0.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-6.0.gpg --dearmor
+          echo "deb [signed-by=/usr/share/keyrings/mongodb-server-6.0.gpg] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
+          sudo apt-get update
+          sudo apt-get install -y mongodb-mongosh
+
+      - name: Check mongosh version
+        run: mongosh --version
+
+      - name: Ensure MongoDB user and database exist
+        run: |
+          echo "👷 Criando usuário, senha e banco curso_git manualmente (idempotente)..."
+          mongosh "mongodb://localhost:27017" <<EOF
+          use curso_git;
+          db.getUser("user") || db.createUser({
+            user: "user",
+            pwd: "123456",
+            roles: [{ role: "readWrite", db: "curso_git" }]
+          });
+          EOF
+
+      - name: Test MongoDB connection
+        run: |
+          echo "⏳ Testando conexão com MongoDB..."
+          for i in {1..10}; do
+            mongosh "mongodb://user:123456@localhost:27017/curso_git?authSource=curso_git&replicaSet=test-rs" --eval "db.stats()" && break
+            echo "Aguardando MongoDB iniciar ($i/10)..."
+            sleep 3
+          done
+
       - name: Install dependencies
         run: npm ci
 
@@ -42,26 +82,6 @@ jobs:
           NODE_ENV: test
           CI: true
         run: npm run test
-
-      - name: Install mongosh
-        run: |
-          curl -fsSL https://pgp.mongodb.com/server-6.0.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-6.0.gpg --dearmor
-          echo "deb [signed-by=/usr/share/keyrings/mongodb-server-6.0.gpg] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
-          sudo apt-get update
-          sudo apt-get install -y mongodb-mongosh
-
-      - name: Check mongosh version
-        run: mongosh --version
-
-      - name: Test MongoDB connection
-        run: |
-          echo "⏳ Testando conexão com MongoDB..."
-          for i in {1..10}; do
-            mongosh "mongodb://user:123456@localhost:27017/curso_git?authSource=curso_git&replicaSet=test-rs" --eval "db.stats()" && break
-            echo "Aguardando MongoDB iniciar ($i/10)..."
-            sleep 3
-          done
-
       - name: Run e2e tests
         env:
           NODE_ENV: test
