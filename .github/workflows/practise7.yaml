@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  MONGODB_PORT: 42069
+  MONGODB_PORT: 27017
   MONGO_DB_TIMEOUT: 15000
   PORT: 3000
 
@@ -28,17 +28,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-
-      - name: Start MongoDB
-        uses: supercharge/mongodb-github-action@1.12.0
-        with:
-          mongodb-version: '7.0'
-          mongodb-username: user
-          mongodb-password: 123456
-          mongodb-db: curso_git
-          mongodb-replica-set: test-rs
-          mongodb-port: 42069
-          mongodb-create-collection: products
 
       - name: Install dependencies
         run: npm ci
@@ -64,6 +53,15 @@ jobs:
       - name: Check mongosh version
         run: mongosh --version
 
+      - name: Test MongoDB connection
+        run: |
+          echo "⏳ Testando conexão com MongoDB..."
+          for i in {1..10}; do
+            mongosh "mongodb://user:123456@localhost:27017/curso_git?authSource=curso_git&replicaSet=test-rs" --eval "db.stats()" && break
+            echo "Aguardando MongoDB iniciar ($i/10)..."
+            sleep 3
+          done
+
       - name: Run e2e tests
         env:
           NODE_ENV: test
@@ -72,9 +70,9 @@ jobs:
           MONGODB_USERNAME: user
           MONGODB_PASSWORD: 123456
           MONGODB_DB_NAME: curso_git
-          MONGODB_PORT: 42069
+          MONGODB_PORT: 27017
           MONGO_DB_TIMEOUT: 15000
-          DATABASE_URL: mongodb://user:123456@127.0.0.1:42069/curso_git?authSource=curso_git&replicaSet=test-rs
+          DATABASE_URL: mongodb://user:123456@localhost:27017/curso_git?authSource=curso_git&replicaSet=test-rs
         run: | 
           echo "📌 DATABASE_URL: $DATABASE_URL"
           
