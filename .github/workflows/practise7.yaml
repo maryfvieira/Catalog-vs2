@@ -8,7 +8,11 @@ on:
 env:
   MONGODB_PORT: 27017
   MONGO_DB_TIMEOUT: 15000
+  MONGODB_USERNAME: ${{ secrets.MONGODB_USERNAME }}
+  MONGODB_PASSWORD: ${{ secrets.MONGODB_PASSWORD }}
   PORT: 3000
+  MONGODB_REPLICA_SET: test-rs
+  MONGO_DB: curso_git
 
 jobs:
   build-and-test:
@@ -33,10 +37,9 @@ jobs:
         uses: supercharge/mongodb-github-action@1.12.0
         with:
           mongodb-version: '7.0'
-          mongodb-db: curso_git
-          mongodb-replica-set: test-rs
-          mongodb-port: 27017
-          mongodb-create-collection: product
+          mongodb-db: ${{ env.MONGO_DB }}
+          mongodb-replica-set: ${{ env.MONGODB_REPLICA_SET }}
+          mongodb-port: ${{ env.MONGODB_PORT }}
 
       - name: Install mongosh
         run: |
@@ -51,12 +54,12 @@ jobs:
       - name: Ensure MongoDB user and database exist
         run: |
           echo "👷 Criando usuário, senha e banco curso_git manualmente (idempotente)..."
-          mongosh "mongodb://localhost:27017" <<EOF
-          use curso_git;
-          db.getUser("user") || db.createUser({
-            user: "user",
-            pwd: "123456",
-            roles: [{ role: "readWrite", db: "curso_git" }]
+          mongosh "mongodb://localhost:$MONGODB_PORT" <<EOF
+          use $MONGO_DB;
+          db.getUser("$MONGODB_USERNAME") || db.createUser({
+            user: "$MONGODB_USERNAME",
+            pwd: "$MONGODB_PASSWORD",
+            roles: [{ role: "readWrite", db: "$MONGO_DB" }]
           });
           EOF
 
@@ -64,7 +67,7 @@ jobs:
         run: |
           echo "⏳ Testando conexão com MongoDB..."
           for i in {1..10}; do
-            mongosh "mongodb://user:123456@localhost:27017/curso_git?authSource=curso_git&replicaSet=test-rs" --eval "db.stats()" && break
+            mongosh "mongodb://$MONGODB_USERNAME:$MONGODB_PASSWORD@localhost:$MONGODB_PORT/$MONGO_DB?authSource=$MONGO_DB&replicaSet=$MONGODB_REPLICA_SET" --eval "db.stats()" && break
             echo "Aguardando MongoDB iniciar ($i/10)..."
             sleep 3
           done
@@ -82,20 +85,14 @@ jobs:
           NODE_ENV: test
           CI: true
         run: npm run test
+
       - name: Run e2e tests
         env:
           NODE_ENV: test
           CI: true
-          MONGODB_CLUSTER_ADDRESS: 127.0.0.1
-          MONGODB_USERNAME: user
-          MONGODB_PASSWORD: 123456
-          MONGODB_DB_NAME: curso_git
-          MONGODB_PORT: 27017
-          MONGO_DB_TIMEOUT: 15000
-          DATABASE_URL: mongodb://user:123456@localhost:27017/curso_git?authSource=curso_git&replicaSet=test-rs
+          DATABASE_URL: mongodb://${{ env.MONGODB_USERNAME }}:${{ env.MONGODB_PASSWORD }}@localhost:${{ env.MONGODB_PORT }}/${{ env.MONGO_DB }}?authSource=${{ env.MONGO_DB }}&replicaSet=${{ env.MONGODB_REPLICA_SET }}
         run: | 
           echo "📌 DATABASE_URL: $DATABASE_URL"
-          
           echo "🚀 Executando testes e2e..."
           npm run test:e2e
 
