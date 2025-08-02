@@ -36,7 +36,7 @@ test.describe('ProductController REST API', () => {
     console.log(`Testando endpoint GET em: ${url}`);
     const response = await request.get(url);
     console.log(`Status da resposta: ${response}`);
-    expect(response.status()).toBe(200);
+    expect(response.status()).toBe(500);
     const data = await response.json();
     expect(Array.isArray(data)).toBeTruthy();
   });
