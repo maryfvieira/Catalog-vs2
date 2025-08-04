@@ -29,9 +29,9 @@ test.beforeAll(async () => {
 
 test.describe('ProductController REST API', () => {
 
-  test('Forçar falha de teste para gerar relatório', async () => {
-  expect(1).toBe(2);
-});
+//   test('Forçar falha de teste para gerar relatório', async () => {
+//   expect(1).toBe(2);
+// });
 
   test('GET /products - deve retornar lista de produtos (possivelmente vazia)', async ({ request }) => {
     
