@@ -29,6 +29,9 @@ test.beforeAll(async () => {
 
 test.describe('ProductController REST API', () => {
 
+  test('Forçar falha de teste para gerar relatório', async () => {
+  expect(1).toBe(2);
+});
 
   test('GET /products - deve retornar lista de produtos (possivelmente vazia)', async ({ request }) => {
     
@@ -36,7 +39,7 @@ test.describe('ProductController REST API', () => {
     console.log(`Testando endpoint GET em: ${url}`);
     const response = await request.get(url);
     console.log(`Status da resposta: ${response}`);
-    expect(response.status()).toBe(500);
+    expect(response.status()).toBe(200);
     const data = await response.json();
     expect(Array.isArray(data)).toBeTruthy();
   });

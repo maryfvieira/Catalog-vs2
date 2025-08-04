@@ -93,12 +93,14 @@ jobs:
           npx tsc-alias -v
 
       - name: Run unit tests with mock
+        id: unit-tests
         env:
           NODE_ENV: test
           CI: true
         run: npm run test
 
       - name: Run e2e tests
+        id: e2e-tests
         env:
           NODE_ENV: test
           CI: true
@@ -108,21 +110,25 @@ jobs:
           echo "🚀 Executando testes e2e..."
           npm run test:e2e
 
-      - name: Generate report if e2e failed
-        if: steps.e2e.outcome == 'failure'
+      - name: Step e2e report outcome
+        run: echo "steps.e2e-tests.outcome=${{ steps.e2e-tests.outcome }}"
+
+      - name: Generate report if e2e fail
+        id: generate-report
+        if: steps.e2e-tests.outcome == 'failure'
         run: |
           echo "❗ Testes e2e falharam — gerando relatório Playwright..."
           npx playwright show-report
 
       - name: Upload Playwright report
-        if: always()
+        if: steps.generate-report.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
           path: playwright-report
 
       - name: Fail job if e2e failed
-        if: steps.e2e.outcome == 'failure'
+        if: steps.e2e-tests.outcome == 'failure'
         run: exit 1
 
   deploy:
