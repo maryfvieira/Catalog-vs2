@@ -122,10 +122,11 @@ jobs:
         #   echo "❗ Testes e2e falharam — gerando relatório Playwright..."
         #   npx playwright show-report --quiet
 
-      - name: Upload Playwright report
-        if: env.GITHUB_ACTIONS == 'true'
-        # if: steps.generate-report.outcome == 'success'
+      - name: Output info
+        run: echo "${{env.GITHUB_ACTIONS}}"
 
+      - name: Upload Playwright report
+        if: ${{ env.GITHUB_ACTIONS == 'true' }} && always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report

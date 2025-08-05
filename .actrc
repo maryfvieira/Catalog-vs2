@@ -1,0 +1,2 @@
+echo '--bind' > .actrc
+echo "--container-options=\"-v${PWD}/playwright-report:/github/workspace/playwright-report\"" >> .actrc
