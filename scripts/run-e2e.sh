@@ -11,7 +11,7 @@ echo "⌛ Aguardando servidor iniciar..."
 npx wait-on tcp:3000
 
 echo "🚀 Executando testes Playwright..."
-npx playwright test --reporter=list
+npx playwright test 
 TEST_RESULT=$?
 
 echo "🛑 Encerrando servidor"
